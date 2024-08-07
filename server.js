@@ -33,18 +33,8 @@ app.get('/api/users', (req, res) => {
     }
     res.json(results);
   });
-});
-app.get('/api/schools', (req, res) => {
-  const sql = 'SELECT * FROM schools';
-  connection.query(sql, (err, results) => {
-    if (err) {
-      return res.status(500).send(err);
-    }
-    res.json(results);
-  });
-});
+});// Endpoint to add a new user
 
-// Endpoint to add a new user
 app.post('/api/signup', (req, res) => {
   const { first_name, email, password } = req.body;
   const sql = 'INSERT INTO users (first_name, email, password) VALUES (?, ?, ?)';
@@ -55,6 +45,41 @@ app.post('/api/signup', (req, res) => {
     return res.status(201).json({ success: true, message: 'User added successfully' });
   });
 });
+
+// Endpoint to fetch schools based on type or all schools if no type provided
+app.get('/api/schools', (req, res) => {
+  const { type } = req.query;
+
+  let sql = 'SELECT * FROM schools';
+
+  // Check if type is provided and filter schools accordingly
+  if (type) {
+    sql += ` WHERE type = '${type}'`;
+  }
+
+  connection.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching schools:', err);
+      return res.status(500).send(err);
+    }
+    res.json(results);
+  });
+});
+
+// Endpoint to fetch school details by school_id
+app.get('/api/schools/:id', (req, res) => {
+  const { id } = req.params;
+  const sql = 'SELECT * FROM schools WHERE school_id = ?';
+  connection.query(sql, [id], (err, results) => {
+    if (err) {
+      console.error('Error fetching school details:', err);
+      return res.status(500).send(err);
+    }
+    res.json(results[0]);
+  });
+});
+
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
